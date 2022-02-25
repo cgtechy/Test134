@@ -1,0 +1,245 @@
+import git
+import requests
+from git import Repo
+import shutil
+import os
+
+# WARNING: DO NOT UNCOMMENT BELOW LINE UNTIL SCRIPT IS REALD FULLY
+# GIT_TOKEN = os.environ['GITTOKEN]
+
+GIT_TOKEN = "temp_name_xyz_123"
+
+# dir_loc= "Test131"
+# link1 = "https://api.github.com/repos/cgtechy/"+dir_loc
+# link2 = 'https://api.github.com/user/repos'
+# headers = {
+#     'Content-type':'application/json',
+#     'Authorization': ''
+# }
+# data = {"name":dir_loc,"description":"This project is a test"}
+# resobj = requests.get(url = link1)
+# print(resobj.status_code)
+# print(resobj.json())
+# resobj = requests.post(url= link2, json = data, headers=headers)
+
+# Just temporary name 
+
+def repoGithubPublisher(remote_repo_url,list_of_files,commit_message,tag_name):
+    
+    if checkRepoExists(repo_url=remote_repo_url) == False:
+        if createRemoteRepo(repo_url=remote_repo_url) == True:
+            print("Repository created")
+        else:
+            return False
+    
+    dir_loc = "Test150"
+
+    # 1st approach - Clone from remote repo
+    cloneUrl = 'https://github.com/<user>/<repo>.git'
+    localRepopath = localRepopath = "D://Github//"+ dir_loc
+    repo = cloneFromRemote(clone_url=cloneUrl,local_repo_path = localRepopath)
+    file_list = moveFiles(dir_loc,list_of_files)
+    repo = createRemote(repo,remote_repo_url)
+    pushRemote(repo,dir_loc,file_list,commit_message,tag_name)
+
+    # 2nd approach - Create on local machine
+
+    file_list = moveFiles(dir_loc,list_of_files)
+    repo = createLocalRepo(dir_loc)
+    repo = createRemote(repo,remote_repo_url)
+    pushRemote(repo,dir_loc,file_list,commit_message,tag_name)
+
+
+    
+
+
+
+
+
+
+
+
+
+
+    # # TODO: dir_loc how to decide?
+    # dir_loc = "Test100"
+    
+    
+    # # TODO: create repo at local machine and push to remote????
+    # # Need to add functionality for this???
+
+    # # TODO: cloneFromGithubRepo
+    
+    # cloneUrl = 'https://github.com/<user>/<repo>.git'
+    
+    # # Need to decide how and at what location we will be needed to add files????
+    # localRepopath = "D://Github//"+dir_loc
+
+    # # Taget_repo is same as remote_repo_url, will change later
+    # target_repo = 'https://github.com/<user>/'+dir_loc+'.git' 
+    
+    # remote_name = 'origin'
+    # # print(resobj.status_code, resobj.json())
+    # repo = Repo.clone_from(cloneUrl, localRepopath)
+    # # Delete a default remote if already present
+    # if repo.remotes.origin.url != target_repo:
+    #     repo.delete_remote(repo.remotes.origin.name)
+
+    # # Create a new remote
+    # try:
+    #     remote = repo.create_remote('origin', url=target_repo)
+    # except git.exc.GitCommandError as error:
+    #     print(f'Error creating remote: {error}')
+    
+    
+    # # TODO: Moving files from one location to another in local machine
+    # shutil.copy("D://Github//Test_file.txt","D://Github//"+dir_loc+"//monk.test1")
+
+    # # TODO: Need to iterate all the list of file
+    # file_list = ['monk.test1/Test_file.txt']
+
+    # # Adding Tag
+    # repo.create_tag(tag_name, message = 'v1.0')
+    # repo.index.add('README.md')
+    
+    # # Adding files to repo index
+    # repo.index.add(file_list)
+
+    # # Adding commit
+    # repo.index.commit(commit_message)
+
+    # # repo.git.checkout("-b", "new_branch")
+    # # Pushing change to remote branch
+    # print(repo.git.push("--set-upstream","origin","main",tags = True))
+
+
+
+def cloneFromRemote(clone_url,local_repo_path):
+    # cloneUrl = 'https://github.com/<user>/<repo>.git'
+    
+    # # Need to decide how and at what location we will be needed to add files????
+    # localRepopath = "D://Github//"+dir_loc
+
+    # Taget_repo is same as remote_repo_url, will change later
+    # target_repo = 'https://github.com/<user>/'+dir_loc+'.git' 
+    
+    # remote_name = 'origin'
+    # # print(resobj.status_code, resobj.json())
+    repo = Repo.clone_from(clone_url, local_repo_path)
+    return repo
+    # createPushRemote(repo)
+    
+
+
+def createLocalRepo(dir_loc):
+    repo_dir = os.path.join(os.getcwd(), dir_loc)
+    repo = git.Repo.init(repo_dir)
+    return repo
+    
+
+def createRemote(repo,remote_repo_url):
+    if repo.remotes.origin.url != remote_repo_url:
+        repo.delete_remote(repo.remotes.origin.name)
+
+    # Create a new remote
+    try:
+        remote = repo.create_remote('origin', url=remote_repo_url)
+    except git.exc.GitCommandError as error:
+        print(f'Error creating remote: {error}')
+    return repo
+
+
+    
+def pushRemote(repo,dir_loc,file_list,commit_message,tag_name):
+    # file_list = ['monk.test1/Test_file.txt']
+    # Adding Tag
+    repo.create_tag(tag_name, message = 'v1.0')
+    repo.index.add('README.md')
+    
+    # Adding files to repo index
+    repo.index.add(file_list)
+
+    # Adding commit
+    repo.index.commit(commit_message)
+
+    # repo.git.checkout("-b", "new_branch")
+    # Pushing change to remote branch
+    print(repo.git.push("--set-upstream","origin","main",tags = True))
+
+def moveFiles(dir_loc,list_of_files):
+    shutil.copy("D://Github//Test_file.txt","D://Github//"+dir_loc+"//monk.test1")
+
+def createRemoteRepo(repo_url):
+    repo = repo_url.split('https://github.com/')[1].split('.git')[0].split("/")[1]
+    # link1 = "https://api.github.com/repos/cgtechy/"+dir_loc
+    link = 'https://api.github.com/user/repos'
+    headers = {
+        'Content-type':'application/json',
+        'Authorization': 'token '+ GIT_TOKEN
+    }
+    data = {"name":repo,"description":"Repository {} has been created.".format(repo)}
+    resobj = requests.post(url= link, json = data, headers=headers)
+    if resobj.status_code == "201":
+        return True
+    else:
+        return False
+
+def checkRepoExists(repo_url):
+    repo = repo_url.split('https://github.com/')[1].split('.git')[0]
+    link = "https://api.github.com/repos/" + repo
+    resobj = requests.get(url = link)
+    if resobj.status_code == "200":
+        return True
+    else:
+        return False
+
+
+
+if __name__ == "__main__":
+    repoGithubPublisher(remote_repo_url,list_of_files,commit_message,tag_name)
+
+    # print(resobj.json())
+
+
+
+
+
+
+
+
+
+
+
+# print(repo.git.commit('-m','test commit'))
+# print(repo.git.push("--set-upstream","origin","main"))
+
+
+# print(repo.git.push("origin", "HEAD:refs/heads/main"))
+    
+# remote = repo.create_remote(remote_name,url = another_url)
+# target_repo = "https://github.com/cgtechy/Tst108.git"
+# print(repo.git.push("--set-upstream","origin","main"))
+
+# # List remotes
+# # Reference a remote by its name as part of the object
+# print(f'Remote name: {repo.remotes.origin.name}')
+# print(f'Remote URL: {repo.remotes.origin.url}')
+
+# # Delete a default remote if already present
+# if repo.remotes.origin.url != target_repo:
+#     repo.delete_remote(repo.remotes.origin.name)
+
+# # Create a new remote
+# try:
+#     remote = repo.create_remote('origin', url=target_repo)
+# except git.exc.GitCommandError as error:
+#     print(f'Error creating remote: {error}')
+    
+# # Reference a remote by its name as part of the object
+# print(f'Remote name: {repo.remotes.origin.name}')
+# print(f'Remote URL: {repo.remotes.origin.url}')
+
+# #Push changes
+# # print(repo.git.push("origin", "HEAD:refs/heads/master"))
+# print(repo.git.push("--set-upstream","origin","main"))
+# # print(repo.git.push("origin"))
